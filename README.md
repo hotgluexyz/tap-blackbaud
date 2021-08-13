@@ -1,100 +1,55 @@
-# tap-procore
+# tap-blackbaud
 
-`tap-procore` is a Singer tap for procore.
+[Singer](https://www.singer.io/) tap that extracts data from the [Blackbaud](https://www.blackbaud.com/) API and produces JSON-formatted data following the [Singer spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 
-Build with the [Singer SDK](https://gitlab.com/meltano/singer-sdk).
-
-## Installation
-
-- [ ] `Developer TODO:` Update the below as needed to correctly describe the install procedure. For instance, if you do not have a PyPi repo, or if you want users to directly install from your git repo, you can modify this step as appropriate.
+Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
 
 ```bash
-pipx install tap-procore
+$ mkvirtualenv -p python3 tap-blackbaud
+$ pip install git+https://github.com/hotgluexyz/tap-blackbaud.git
+$ tap-blackbaud --config config.json --discover
+$ tap-blackbaud --config config.json --catalog catalog.json --state state.json
 ```
 
-## Configuration
+# Quickstart
 
-### Accepted Config Options
+## Install the tap
 
-- [ ] `Developer TODO:` Provide a list of config options accepted by the tap.
-
-A full list of supported settings and capabilities for this
-tap is available by running:
-
-```bash
-tap-procore --about
+```
+> pip install git+https://github.com/hotgluexyz/tap-blackbaud.git
 ```
 
-### Source Authentication and Authorization
+## Create a Config file
 
-- [ ] `Developer TODO:` If your tap requires special access on the source system, or any special authentication requirements, provide those here.
-
-## Usage
-
-You can easily run `tap-procore` by itself or in a pipeline using [Meltano](www.meltano.com).
-
-### Executing the Tap Directly
-
-```bash
-tap-procore --version
-tap-procore --help
-tap-procore --config CONFIG --discover > ./catalog.json
+```
+{
+  "client_id": "qwerty",
+  "client_secret": "**********",
+  "refresh_token": "**********",
+  "redirect_uri": "https://example.com/callback",
+  "subscription_key": "my-api-key",
+  "start_date": "2018-01-08T00:00:00Z"
+}
 ```
 
-## Developer Resources
+The `client_id`, `client_secret`, `refresh_token` and `redirect_ui` should be generated from the Blackbaud OAuth Authorization Code flow. [Learn more on the Blackbaud docs](https://developer.blackbaud.com/skyapi/docs/authorization/auth-code-flow/tutorial)
 
-- [ ] `Developer TODO:` As a first step, scan the entire project for the text "`TODO:`" and complete any recommended steps, deleting the "TODO" references once completed.
+The `subscription_key` can be found in your [Blackbaud developer portal](https://developer.sky.blackbaud.com/developer)
 
-### Initialize your Development Environment
+The `start_date` is used by the tap as a bound on queries when searching for records.  This should be an [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) formatted date-time, like "2018-01-08T00:00:00Z". For more details, see the [Singer best practices for dates](https://github.com/singer-io/getting-started/blob/master/BEST_PRACTICES.md#dates).
 
-```bash
-pipx install poetry
-poetry install
+## Run Discovery
+
+To run discovery mode, execute the tap with the config file.
+
+```
+> tap-blackbaud --config config.json --discover > catalog.json
 ```
 
-### Create and Run Tests
+## Sync Data
 
-Create tests within the `tap_procore/tests` subfolder and
-  then run:
+To sync data, select fields in the `catalog.json` output and run the tap.
 
-```bash
-poetry run pytest
 ```
-
-You can also test the `tap-procore` CLI interface directly using `poetry run`:
-
-```bash
-poetry run tap-procore --help
+> tap-blackbaud --config config.json --catalog catalog.json [--state state.json]
 ```
-
-### Testing with [Meltano](meltano.com)
-
-_**Note:** This tap will work in any Singer environment and does not require Meltano.
-Examples here are for convenience and to streamline end-to-end orchestration scenarios._
-
-Your project comes with a custom `meltano.yml` project file already created. Open the `meltano.yml` and follow any _"TODO"_ items listed in
-the file.
-
-Next, install Meltano (if you haven't already) and any needed plugins:
-
-```bash
-# Install meltano
-pipx install meltano
-# Initialize meltano within this directory
-cd tap-procore
-meltano install
-```
-
-Now you can test and orchestrate using Meltano:
-
-```bash
-# Test invocation:
-meltano invoke tap-procore --version
-# OR run a test `elt` pipeline:
-meltano etl tap-procore target-jsonl
-```
-
-### Singer SDK Dev Guide
-
-See the [dev guide](../../docs/dev_guide.md) for more instructions on how to use the Singer SDK to 
-develop your own taps and targets.

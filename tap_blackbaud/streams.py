@@ -327,3 +327,38 @@ class ConstituentsByListStream(BlackbaudStream):
         Property("title", StringType),
         Property("type", StringType)
     ).to_dict()
+
+
+class EducationsStream(BlackbaudStream):
+
+    name = "educations"
+
+    path = "/constituent/v1/educations"
+
+    primary_keys = ["id"]
+    replication_key = None
+
+    schema = PropertiesList(
+        Property("id", StringType),
+        Property("constituent_id", StringType),
+        Property("campus", StringType),
+        Property("class_of", StringType),
+        Property("date_added", StringType),
+        Property("date_entered", ObjectType(
+            Property("d", IntegerType),
+            Property("m", IntegerType),
+            Property("y", IntegerType)
+        )),
+        Property("date_graduated", ObjectType(
+            Property("d", IntegerType),
+            Property("m", IntegerType),
+            Property("y", IntegerType)
+        )),
+        Property("date_modified", StringType),
+        Property("degree", StringType),
+        Property("majors", ArrayType(StringType)),
+        Property("minors", ArrayType(StringType)),
+        Property("primary", BooleanType),
+        Property("school", StringType),
+        Property("type", StringType)
+    ).to_dict()

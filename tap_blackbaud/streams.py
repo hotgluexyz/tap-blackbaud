@@ -134,6 +134,7 @@ class ConstituentListsStream(BlackbaudStream):
         Property("is_public", BooleanType)
     ).to_dict()
 
+
 class ConstituentsStream(BlackbaudStream):
     name = "constituents"
 
@@ -148,7 +149,6 @@ class ConstituentsStream(BlackbaudStream):
             Property("id", StringType),
             Property("address_lines", StringType),
             Property("city", StringType),
-            Property("constituent_id", StringType),
             Property("country", StringType),
             Property("county", StringType),
             Property("formatted_address", StringType),
@@ -169,7 +169,6 @@ class ConstituentsStream(BlackbaudStream):
         Property("email", ObjectType(
             Property("id", StringType),
             Property("address", StringType),
-            Property("constituent_id", StringType),
             Property("do_not_email", BooleanType),
             Property("inactive", BooleanType),
             Property("primary", BooleanType),
@@ -184,16 +183,29 @@ class ConstituentsStream(BlackbaudStream):
         Property("lookup_id", StringType),
         Property("middle", StringType),
         Property("name", StringType),
+        Property("online_presence", ObjectType (
+            Property("id", StringType),
+            Property("address", StringType),
+            Property("inactive", BooleanType),
+            Property("primary", BooleanType),
+            Property("type", StringType)
+        )),
+
         Property("phone", ObjectType(
             Property("id", StringType),
-            Property("constituent_id", StringType),
             Property("do_not_call", BooleanType),
             Property("inactive", BooleanType),
             Property("number", StringType),
             Property("primary", BooleanType),
             Property("type", StringType)
         )),
-        Property("suffix", StringType),
+        Property("preferred_name", StringType),
+        Property("spouse", ObjectType (
+            Property("id", StringType),
+            Property("first", StringType),
+            Property("last", StringType),
+            Property("is_head_of_household", BooleanType)
+        )),
         Property("title", StringType),
         Property("type", StringType)
     ).to_dict()

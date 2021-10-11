@@ -1,6 +1,6 @@
 # tap-blackbaud
 
-[Singer](https://www.singer.io/) tap that extracts data from the [Blackbaud](https://www.blackbaud.com/) API and produces JSON-formatted data following the [Singer spec](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
+[Singer](https://www.singer.io/) tap that extracts data from the [Blackbaud](https://www.blackbaud.com/) API and produces JSON-formatted data following the [Singer spec](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md).
 
 Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
 
@@ -36,7 +36,7 @@ The `client_id`, `client_secret`, `refresh_token` and `redirect_ui` should be ge
 
 The `subscription_key` can be found in your [Blackbaud developer portal](https://developer.sky.blackbaud.com/developer)
 
-The `start_date` is used by the tap as a bound on queries when searching for records.  This should be an [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) formatted date-time, like "2018-01-08T00:00:00Z". For more details, see the [Singer best practices for dates](https://github.com/singer-io/getting-started/blob/master/BEST_PRACTICES.md#dates).
+The `start_date` is used by the tap as a bound on queries when searching for records. This should be an [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) formatted date-time, like "2018-01-08T00:00:00Z". For more details, see the [Singer best practices for dates](https://github.com/singer-io/getting-started/blob/master/BEST_PRACTICES.md#dates).
 
 ## Run Discovery
 

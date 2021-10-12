@@ -273,9 +273,7 @@ class ConstituentsStream(BlackbaudStream):
             A new, processed record.
         """
 
-        # self.logger.info(row)
         constituent_id = row["id"]
-        # self.logger.info(constituent_id)
 
         # LIFETIME GIVING
         lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
@@ -301,7 +299,7 @@ class ConstituentsStream(BlackbaudStream):
                 item["amount"] = item["amount"]["value"]
         row["fundraiser_assignment_list"] = fundraiser_list
 
-        self.logger.info(row)
+        # self.logger.info(row)
 
         return row
 

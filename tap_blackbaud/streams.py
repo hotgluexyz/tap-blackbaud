@@ -142,6 +142,8 @@ class ConstituentsStream(BlackbaudStream):
     primary_keys = ["id"]
     replication_key = None
 
+    flatten_list = set(["total_committed_matching_gifts", "total_giving", "total_pledge_balance", "total_received_giving", "total_received_matching_gifts", "total_soft_credits"])
+
     schema = PropertiesList(
         Property("id", StringType),
         Property("address", ObjectType(
@@ -206,38 +208,38 @@ class ConstituentsStream(BlackbaudStream):
         )),
         Property("title", StringType),
         Property("type", StringType),
-        # Property("lifetime_giving", ObjectType(
-        #     Property("consecutive_years_given", IntegerType),
-        #     Property("total_committed_matching_gifts", NumberType),
-        #     Property("total_giving", NumberType),
-        #     Property("total_pledge_balance", NumberType),
-        #     Property("total_received_giving", NumberType),
-        #     Property("total_received_matching_gifts", NumberType),
-        #     Property("total_soft_credits", NumberType),
-        #     Property("total_years_given", IntegerType),
-        # )),
         Property("lifetime_giving", ObjectType(
             Property("consecutive_years_given", IntegerType),
-            Property("total_committed_matching_gifts", ObjectType(
-                Property("value", NumberType)
-            )),
-            Property("total_giving", ObjectType(
-                Property("value", NumberType)
-            )),
-            Property("total_pledge_balance", ObjectType(
-                Property("value", NumberType)
-            )),
-            Property("total_received_giving", ObjectType(
-                Property("value", NumberType)
-            )),
-            Property("total_received_matching_gifts", ObjectType(
-                Property("value", NumberType)
-            )),
-            Property("total_soft_credits", ObjectType(
-                Property("value", NumberType)
-            )),
+            Property("total_committed_matching_gifts", NumberType),
+            Property("total_giving", NumberType),
+            Property("total_pledge_balance", NumberType),
+            Property("total_received_giving", NumberType),
+            Property("total_received_matching_gifts", NumberType),
+            Property("total_soft_credits", NumberType),
             Property("total_years_given", IntegerType),
         )),
+        # Property("lifetime_giving", ObjectType(
+        #     Property("consecutive_years_given", IntegerType),
+        #     Property("total_committed_matching_gifts", ObjectType(
+        #         Property("value", NumberType)
+        #     )),
+        #     Property("total_giving", ObjectType(
+        #         Property("value", NumberType)
+        #     )),
+        #     Property("total_pledge_balance", ObjectType(
+        #         Property("value", NumberType)
+        #     )),
+        #     Property("total_received_giving", ObjectType(
+        #         Property("value", NumberType)
+        #     )),
+        #     Property("total_received_matching_gifts", ObjectType(
+        #         Property("value", NumberType)
+        #     )),
+        #     Property("total_soft_credits", ObjectType(
+        #         Property("value", NumberType)
+        #     )),
+        #     Property("total_years_given", IntegerType),
+        # )),
         Property("fundraiser_assignment_list", ArrayType(
             ObjectType(
                 Property("id", StringType),             # required
@@ -273,17 +275,17 @@ class ConstituentsStream(BlackbaudStream):
         # self.logger.info(row)
         constituent_id = row["id"]
         # self.logger.info(constituent_id)
+
         # LIFETIME GIVING
         lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
         resp = requests.get(lifetime_giving_endpoint, headers=self.http_headers)
-        # self.logger.info(r.json())
         # todo: test response code
         lifetime_giving_json = resp.json()
-        # giving_object = {}
-        # for key in lifetime_giving_json:
-        #     giving_object[key] = lifetime_giving_json[key] if lifetime_giving_json[key].get("value", None) is None else lifetime_giving_json[key]["value"]
-        # row["lifetime_giving"] = giving_object
-        row["lifetime_giving"] = lifetime_giving_json
+        giving_object = {**lifetime_giving_json}
+        for key in lifetime_giving_json:
+            if (key in self.flatten_list):
+                giving_object[key] = lifetime_giving_json[key]["value"]
+        row["lifetime_giving"] = giving_object
 
         # FUNDRAISER ASSIGNMENT
         include_inactive = 'true'
@@ -293,9 +295,7 @@ class ConstituentsStream(BlackbaudStream):
         fundraiser_assignment_json = resp.json()
         row["fundraiser_assignment_list"] = fundraiser_assignment_json["value"]
 
-        # row["fundraiser_assignment_list"]
-
-        self.logger.info(row)
+        # self.logger.info(row)
 
         return row
 

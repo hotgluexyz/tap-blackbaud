@@ -247,8 +247,9 @@ class ConstituentsStream(BlackbaudStream):
                 Property("fundraiser_id", StringType),  # required
                 Property("appeal_id", StringType),      # optional
                 Property("fund_id", StringType),        # optional
-                Property("amount", ObjectType(          # required
-                    Property("value", NumberType))),    # required
+                Property("amount", NumberType),         # required
+                # Property("amount", ObjectType(          # required
+                #     Property("value", NumberType))),    # required
                 Property("start", DateTimeType),        # optional
                 Property("end", DateTimeType),          # optional
                 Property("type", StringType),           # required
@@ -293,9 +294,14 @@ class ConstituentsStream(BlackbaudStream):
         resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)
         # todo: test response code
         fundraiser_assignment_json = resp.json()
-        row["fundraiser_assignment_list"] = fundraiser_assignment_json["value"]
+        fundraiser_list = fundraiser_assignment_json["value"]
+        # flatten amount -- here or during transform?
+        for item in fundraiser_list:
+            if ("amount" in item):
+                item["amount"] = item["amount"]["value"]
+        row["fundraiser_assignment_list"] = fundraiser_list
 
-        # self.logger.info(row)
+        self.logger.info(row)
 
         return row
 

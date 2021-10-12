@@ -136,10 +136,9 @@ class ConstituentListsStream(BlackbaudStream):
 
 
 class ConstituentsStream(BlackbaudStream):
+
     name = "constituents"
-
     path = "/constituent/v1/constituents"
-
     primary_keys = ["id"]
     replication_key = None
 
@@ -190,7 +189,6 @@ class ConstituentsStream(BlackbaudStream):
             Property("primary", BooleanType),
             Property("type", StringType)
         )),
-
         Property("phone", ObjectType(
             Property("id", StringType),
             Property("do_not_call", BooleanType),
@@ -207,8 +205,100 @@ class ConstituentsStream(BlackbaudStream):
             Property("is_head_of_household", BooleanType)
         )),
         Property("title", StringType),
-        Property("type", StringType)
+        Property("type", StringType),
+        # Property("lifetime_giving", ObjectType(
+        #     Property("consecutive_years_given", IntegerType),
+        #     Property("total_committed_matching_gifts", NumberType),
+        #     Property("total_giving", NumberType),
+        #     Property("total_pledge_balance", NumberType),
+        #     Property("total_received_giving", NumberType),
+        #     Property("total_received_matching_gifts", NumberType),
+        #     Property("total_soft_credits", NumberType),
+        #     Property("total_years_given", IntegerType),
+        # )),
+        Property("lifetime_giving", ObjectType(
+            Property("consecutive_years_given", IntegerType),
+            Property("total_committed_matching_gifts", ObjectType(
+                Property("value", NumberType)
+            )),
+            Property("total_giving", ObjectType(
+                Property("value", NumberType)
+            )),
+            Property("total_pledge_balance", ObjectType(
+                Property("value", NumberType)
+            )),
+            Property("total_received_giving", ObjectType(
+                Property("value", NumberType)
+            )),
+            Property("total_received_matching_gifts", ObjectType(
+                Property("value", NumberType)
+            )),
+            Property("total_soft_credits", ObjectType(
+                Property("value", NumberType)
+            )),
+            Property("total_years_given", IntegerType),
+        )),
+        Property("fundraiser_assignment_list", ArrayType(
+            ObjectType(
+                Property("id", StringType),             # required
+                Property("campaign_id", StringType),    # required
+                Property("fundraiser_id", StringType),  # required
+                Property("appeal_id", StringType),      # optional
+                Property("fund_id", StringType),        # optional
+                Property("amount", ObjectType(          # required
+                    Property("value", NumberType))),    # required
+                Property("start", DateTimeType),        # optional
+                Property("end", DateTimeType),          # optional
+                Property("type", StringType),           # required
+            )
+        ))
     ).to_dict()
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> dict:
+        """As needed, append or transform raw data to match expected structure.
+
+        Optional. This method gives developers an opportunity to "clean up" the results
+        prior to returning records to the downstream tap - for instance: cleaning,
+        renaming, or appending properties to the raw record result returned from the
+        API.
+
+        Args:
+            row: Individual record in the stream.
+            context: Stream partition or context dictionary.
+
+        Returns:
+            A new, processed record.
+        """
+
+        # self.logger.info(row)
+        constituent_id = row["id"]
+        # self.logger.info(constituent_id)
+        # LIFETIME GIVING
+        lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
+        resp = requests.get(lifetime_giving_endpoint, headers=self.http_headers)
+        # self.logger.info(r.json())
+        # todo: test response code
+        lifetime_giving_json = resp.json()
+        # giving_object = {}
+        # for key in lifetime_giving_json:
+        #     giving_object[key] = lifetime_giving_json[key] if lifetime_giving_json[key].get("value", None) is None else lifetime_giving_json[key]["value"]
+        # row["lifetime_giving"] = giving_object
+        row["lifetime_giving"] = lifetime_giving_json
+
+        # FUNDRAISER ASSIGNMENT
+        include_inactive = 'true'
+        fundraiser_assignment_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/fundraiserassignments?include_inactive={include_inactive}"
+        resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)
+        # todo: test response code
+        fundraiser_assignment_json = resp.json()
+        row["fundraiser_assignment_list"] = fundraiser_assignment_json["value"]
+
+        # row["fundraiser_assignment_list"]
+
+        self.logger.info(row)
+
+        return row
+
 
 
 class ConstituentsByListStream(BlackbaudStream):

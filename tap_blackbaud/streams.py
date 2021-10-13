@@ -218,28 +218,6 @@ class ConstituentsStream(BlackbaudStream):
             Property("total_soft_credits", NumberType),
             Property("total_years_given", IntegerType),
         )),
-        # Property("lifetime_giving", ObjectType(
-        #     Property("consecutive_years_given", IntegerType),
-        #     Property("total_committed_matching_gifts", ObjectType(
-        #         Property("value", NumberType)
-        #     )),
-        #     Property("total_giving", ObjectType(
-        #         Property("value", NumberType)
-        #     )),
-        #     Property("total_pledge_balance", ObjectType(
-        #         Property("value", NumberType)
-        #     )),
-        #     Property("total_received_giving", ObjectType(
-        #         Property("value", NumberType)
-        #     )),
-        #     Property("total_received_matching_gifts", ObjectType(
-        #         Property("value", NumberType)
-        #     )),
-        #     Property("total_soft_credits", ObjectType(
-        #         Property("value", NumberType)
-        #     )),
-        #     Property("total_years_given", IntegerType),
-        # )),
         Property("fundraiser_assignment_list", ArrayType(
             ObjectType(
                 Property("id", StringType),             # required
@@ -248,8 +226,6 @@ class ConstituentsStream(BlackbaudStream):
                 Property("appeal_id", StringType),      # optional
                 Property("fund_id", StringType),        # optional
                 Property("amount", NumberType),         # required
-                # Property("amount", ObjectType(          # required
-                #     Property("value", NumberType))),    # required
                 Property("start", DateTimeType),        # optional
                 Property("end", DateTimeType),          # optional
                 Property("type", StringType),           # required

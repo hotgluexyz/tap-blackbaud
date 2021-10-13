@@ -134,13 +134,15 @@ class ConstituentListsStream(BlackbaudStream):
         Property("is_public", BooleanType)
     ).to_dict()
 
+
 class ConstituentsStream(BlackbaudStream):
+
     name = "constituents"
-
     path = "/constituent/v1/constituents"
-
     primary_keys = ["id"]
     replication_key = None
+
+    flatten_list = set(["total_committed_matching_gifts", "total_giving", "total_pledge_balance", "total_received_giving", "total_received_matching_gifts", "total_soft_credits"])
 
     schema = PropertiesList(
         Property("id", StringType),
@@ -148,7 +150,6 @@ class ConstituentsStream(BlackbaudStream):
             Property("id", StringType),
             Property("address_lines", StringType),
             Property("city", StringType),
-            Property("constituent_id", StringType),
             Property("country", StringType),
             Property("county", StringType),
             Property("formatted_address", StringType),
@@ -169,7 +170,6 @@ class ConstituentsStream(BlackbaudStream):
         Property("email", ObjectType(
             Property("id", StringType),
             Property("address", StringType),
-            Property("constituent_id", StringType),
             Property("do_not_email", BooleanType),
             Property("inactive", BooleanType),
             Property("primary", BooleanType),
@@ -184,19 +184,101 @@ class ConstituentsStream(BlackbaudStream):
         Property("lookup_id", StringType),
         Property("middle", StringType),
         Property("name", StringType),
+        Property("online_presence", ObjectType (
+            Property("id", StringType),
+            Property("address", StringType),
+            Property("inactive", BooleanType),
+            Property("primary", BooleanType),
+            Property("type", StringType)
+        )),
         Property("phone", ObjectType(
             Property("id", StringType),
-            Property("constituent_id", StringType),
             Property("do_not_call", BooleanType),
             Property("inactive", BooleanType),
             Property("number", StringType),
             Property("primary", BooleanType),
             Property("type", StringType)
         )),
-        Property("suffix", StringType),
+        Property("preferred_name", StringType),
+        Property("spouse", ObjectType (
+            Property("id", StringType),
+            Property("first", StringType),
+            Property("last", StringType),
+            Property("is_head_of_household", BooleanType)
+        )),
         Property("title", StringType),
-        Property("type", StringType)
+        Property("type", StringType),
+        Property("lifetime_giving", ObjectType(
+            Property("consecutive_years_given", IntegerType),
+            Property("total_committed_matching_gifts", NumberType),
+            Property("total_giving", NumberType),
+            Property("total_pledge_balance", NumberType),
+            Property("total_received_giving", NumberType),
+            Property("total_received_matching_gifts", NumberType),
+            Property("total_soft_credits", NumberType),
+            Property("total_years_given", IntegerType),
+        )),
+        Property("fundraiser_assignment_list", ArrayType(
+            ObjectType(
+                Property("id", StringType),             # required
+                Property("campaign_id", StringType),    # required
+                Property("fundraiser_id", StringType),  # required
+                Property("appeal_id", StringType),      # optional
+                Property("fund_id", StringType),        # optional
+                Property("amount", NumberType),         # required
+                Property("start", DateTimeType),        # optional
+                Property("end", DateTimeType),          # optional
+                Property("type", StringType),           # required
+            )
+        ))
     ).to_dict()
+
+    def post_process(self, row: dict, context: Optional[dict] = None) -> dict:
+        """As needed, append or transform raw data to match expected structure.
+
+        Optional. This method gives developers an opportunity to "clean up" the results
+        prior to returning records to the downstream tap - for instance: cleaning,
+        renaming, or appending properties to the raw record result returned from the
+        API.
+
+        Args:
+            row: Individual record in the stream.
+            context: Stream partition or context dictionary.
+
+        Returns:
+            A new, processed record.
+        """
+
+        constituent_id = row["id"]
+
+        # LIFETIME GIVING
+        lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
+        resp = requests.get(lifetime_giving_endpoint, headers=self.http_headers)
+        # todo: test response code
+        lifetime_giving_json = resp.json()
+        giving_object = {**lifetime_giving_json}
+        for key in lifetime_giving_json:
+            if (key in self.flatten_list):
+                giving_object[key] = lifetime_giving_json[key]["value"]
+        row["lifetime_giving"] = giving_object
+
+        # FUNDRAISER ASSIGNMENT
+        include_inactive = 'true'
+        fundraiser_assignment_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/fundraiserassignments?include_inactive={include_inactive}"
+        resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)
+        # todo: test response code
+        fundraiser_assignment_json = resp.json()
+        fundraiser_list = fundraiser_assignment_json["value"]
+        # flatten amount -- here or during transform?
+        for item in fundraiser_list:
+            if ("amount" in item):
+                item["amount"] = item["amount"]["value"]
+        row["fundraiser_assignment_list"] = fundraiser_list
+
+        # self.logger.info(row)
+
+        return row
+
 
 
 class ConstituentsByListStream(BlackbaudStream):
@@ -313,5 +395,40 @@ class ConstituentsByListStream(BlackbaudStream):
         )),
         Property("suffix", StringType),
         Property("title", StringType),
+        Property("type", StringType)
+    ).to_dict()
+
+
+class EducationsStream(BlackbaudStream):
+
+    name = "educations"
+
+    path = "/constituent/v1/educations"
+
+    primary_keys = ["id"]
+    replication_key = None
+
+    schema = PropertiesList(
+        Property("id", StringType),
+        Property("constituent_id", StringType),
+        Property("campus", StringType),
+        Property("class_of", StringType),
+        Property("date_added", StringType),
+        Property("date_entered", ObjectType(
+            Property("d", IntegerType),
+            Property("m", IntegerType),
+            Property("y", IntegerType)
+        )),
+        Property("date_graduated", ObjectType(
+            Property("d", IntegerType),
+            Property("m", IntegerType),
+            Property("y", IntegerType)
+        )),
+        Property("date_modified", StringType),
+        Property("degree", StringType),
+        Property("majors", ArrayType(StringType)),
+        Property("minors", ArrayType(StringType)),
+        Property("primary", BooleanType),
+        Property("school", StringType),
         Property("type", StringType)
     ).to_dict()

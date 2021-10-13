@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tap-blackbaud"
-version = "0.0.1"
+version = "0.0.2"
 description = "`tap-blackbaud` is a Singer tap for Blackbaud, built with the Meltano SDK for Singer Taps."
 authors = ["hotglue"]
 license = "Apache 2.0"

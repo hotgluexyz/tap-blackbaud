@@ -1,9 +1,8 @@
 """Stream class for tap-blackbaud."""
 
-
 import requests
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union, List, Iterable, cast
+from typing import Any, Dict, Optional, Union, List, Iterable, cast
 
 from singer.schema import Schema
 
@@ -141,8 +140,6 @@ class ConstituentsStream(BlackbaudStream):
     primary_keys = ["id"]
     replication_key = None
 
-    # include_fundraiser_assignment = False
-    # include_lifetime_giving = True
     flatten_list = set(["total_committed_matching_gifts", "total_giving", "total_pledge_balance", "total_received_giving", "total_received_matching_gifts", "total_soft_credits"])
 
     schema = PropertiesList(

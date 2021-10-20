@@ -8,8 +8,10 @@ from singer.schema import Schema
 
 from singer_sdk.streams import RESTStream
 from singer_sdk.helpers._util import utc_now
+from singer_sdk.helpers._singer import (
+    Catalog,
+)
 from singer_sdk.plugin_base import PluginBase as TapBaseClass
-
 
 from singer_sdk.authenticators import (
     APIAuthenticatorBase,
@@ -231,6 +233,35 @@ class ConstituentsStream(BlackbaudStream):
         ))
     ).to_dict()
 
+
+    def apply_catalog(self, catalog: Catalog) -> None:
+        """Apply a catalog dict, updating any settings overridden within the catalog.
+
+        Developers may override this method in order to introduce advanced catalog
+        parsing, or to explicitly fail on advanced catalog customizations which
+        are not supported by the tap.
+
+        Args:
+            catalog: Catalog object passed to the tap. Defines schema, primary and
+                replication keys, as well as selection metadata.
+        """
+        self._tap_input_catalog = catalog
+
+        catalog_entry = catalog.get_stream(self.name)
+        if catalog_entry:
+            self.primary_keys = catalog_entry.key_properties
+            self.replication_key = catalog_entry.replication_key
+            if catalog_entry.replication_method:
+                self.forced_replication_method = catalog_entry.replication_method
+
+
+        lifetime_giving_meta = self.metadata.get(('properties', 'lifetime_giving'), None)
+        self.include_lifetime_giving = True if lifetime_giving_meta and lifetime_giving_meta.selected else False
+
+        fundraiser_assignment_meta = self.metadata.get(('properties', 'fundraiser_assignment_list'), None)
+        self.include_fundraiser_assignment = True if fundraiser_assignment_meta and fundraiser_assignment_meta.selected else False
+
+
     def post_process(self, row: dict, context: Optional[dict] = None) -> dict:
         """As needed, append or transform raw data to match expected structure.
 
@@ -250,9 +281,7 @@ class ConstituentsStream(BlackbaudStream):
         constituent_id = row["id"]
 
         # LIFETIME GIVING
-        include_lifetime_giving = self.metadata.get(('properties', 'lifetime_giving'), None)
-        include_lifetime_giving = True if include_lifetime_giving and include_lifetime_giving.selected else False
-        if include_lifetime_giving:
+        if self.include_lifetime_giving:
             lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
             resp = requests.get(lifetime_giving_endpoint, headers=self.http_headers)
             # todo: test response code
@@ -264,9 +293,7 @@ class ConstituentsStream(BlackbaudStream):
             row["lifetime_giving"] = giving_object
 
         # FUNDRAISER ASSIGNMENT
-        include_fundraiser_assignment = self.metadata.get(('properties', 'fundraiser_assignment_list'), None)
-        include_fundraiser_assignment = True if include_fundraiser_assignment and include_fundraiser_assignment.selected else False
-        if include_fundraiser_assignment:
+        if self.include_fundraiser_assignment:
             include_inactive = 'true'
             fundraiser_assignment_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/fundraiserassignments?include_inactive={include_inactive}"
             resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)
@@ -282,7 +309,6 @@ class ConstituentsStream(BlackbaudStream):
         # self.logger.info(row)
 
         return row
-
 
 
 class ConstituentsByListStream(BlackbaudStream):

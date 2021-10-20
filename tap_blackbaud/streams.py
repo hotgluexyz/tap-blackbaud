@@ -253,7 +253,6 @@ class ConstituentsStream(BlackbaudStream):
         include_lifetime_giving = self.metadata.get(('properties', 'lifetime_giving'), None)
         include_lifetime_giving = True if include_lifetime_giving and include_lifetime_giving.selected else False
         if include_lifetime_giving:
-            self.logger.info('getting lifetime_giving')
             lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
             resp = requests.get(lifetime_giving_endpoint, headers=self.http_headers)
             # todo: test response code
@@ -268,7 +267,6 @@ class ConstituentsStream(BlackbaudStream):
         include_fundraiser_assignment = self.metadata.get(('properties', 'fundraiser_assignment_list'), None)
         include_fundraiser_assignment = True if include_fundraiser_assignment and include_fundraiser_assignment.selected else False
         if include_fundraiser_assignment:
-            self.logger.info('getting fundraiser')
             include_inactive = 'true'
             fundraiser_assignment_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/fundraiserassignments?include_inactive={include_inactive}"
             resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)

@@ -2,9 +2,8 @@
 
 
 import requests
-
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, List, Iterable, cast
+from typing import Any, Dict, Optional, Tuple, Union, List, Iterable, cast
 
 from singer.schema import Schema
 
@@ -142,6 +141,8 @@ class ConstituentsStream(BlackbaudStream):
     primary_keys = ["id"]
     replication_key = None
 
+    # include_fundraiser_assignment = False
+    # include_lifetime_giving = True
     flatten_list = set(["total_committed_matching_gifts", "total_giving", "total_pledge_balance", "total_received_giving", "total_received_matching_gifts", "total_soft_credits"])
 
     schema = PropertiesList(
@@ -252,28 +253,36 @@ class ConstituentsStream(BlackbaudStream):
         constituent_id = row["id"]
 
         # LIFETIME GIVING
-        lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
-        resp = requests.get(lifetime_giving_endpoint, headers=self.http_headers)
-        # todo: test response code
-        lifetime_giving_json = resp.json()
-        giving_object = {**lifetime_giving_json}
-        for key in lifetime_giving_json:
-            if (key in self.flatten_list):
-                giving_object[key] = lifetime_giving_json[key]["value"]
-        row["lifetime_giving"] = giving_object
+        include_lifetime_giving = self.metadata.get(('properties', 'lifetime_giving'), None)
+        include_lifetime_giving = True if include_lifetime_giving and include_lifetime_giving.selected else False
+        if include_lifetime_giving:
+            self.logger.info('getting lifetime_giving')
+            lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
+            resp = requests.get(lifetime_giving_endpoint, headers=self.http_headers)
+            # todo: test response code
+            lifetime_giving_json = resp.json()
+            giving_object = {**lifetime_giving_json}
+            for key in lifetime_giving_json:
+                if (key in self.flatten_list):
+                    giving_object[key] = lifetime_giving_json[key]["value"]
+            row["lifetime_giving"] = giving_object
 
         # FUNDRAISER ASSIGNMENT
-        include_inactive = 'true'
-        fundraiser_assignment_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/fundraiserassignments?include_inactive={include_inactive}"
-        resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)
-        # todo: test response code
-        fundraiser_assignment_json = resp.json()
-        fundraiser_list = fundraiser_assignment_json["value"]
-        # flatten amount -- here or during transform?
-        for item in fundraiser_list:
-            if ("amount" in item):
-                item["amount"] = item["amount"]["value"]
-        row["fundraiser_assignment_list"] = fundraiser_list
+        include_fundraiser_assignment = self.metadata.get(('properties', 'fundraiser_assignment_list'), None)
+        include_fundraiser_assignment = True if include_fundraiser_assignment and include_fundraiser_assignment.selected else False
+        if include_fundraiser_assignment:
+            self.logger.info('getting fundraiser')
+            include_inactive = 'true'
+            fundraiser_assignment_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/fundraiserassignments?include_inactive={include_inactive}"
+            resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)
+            # todo: test response code
+            fundraiser_assignment_json = resp.json()
+            fundraiser_list = fundraiser_assignment_json["value"]
+            # flatten amount -- here or during transform?
+            for item in fundraiser_list:
+                if ("amount" in item):
+                    item["amount"] = item["amount"]["value"]
+            row["fundraiser_assignment_list"] = fundraiser_list
 
         # self.logger.info(row)
 

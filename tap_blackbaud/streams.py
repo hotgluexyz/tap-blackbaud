@@ -1,8 +1,6 @@
 """Stream class for tap-blackbaud."""
 
-
 import requests
-
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, List, Iterable, cast
 
@@ -10,8 +8,10 @@ from singer.schema import Schema
 
 from singer_sdk.streams import RESTStream
 from singer_sdk.helpers._util import utc_now
+from singer_sdk.helpers._singer import (
+    Catalog,
+)
 from singer_sdk.plugin_base import PluginBase as TapBaseClass
-
 
 from singer_sdk.authenticators import (
     APIAuthenticatorBase,
@@ -233,6 +233,35 @@ class ConstituentsStream(BlackbaudStream):
         ))
     ).to_dict()
 
+
+    def apply_catalog(self, catalog: Catalog) -> None:
+        """Apply a catalog dict, updating any settings overridden within the catalog.
+
+        Developers may override this method in order to introduce advanced catalog
+        parsing, or to explicitly fail on advanced catalog customizations which
+        are not supported by the tap.
+
+        Args:
+            catalog: Catalog object passed to the tap. Defines schema, primary and
+                replication keys, as well as selection metadata.
+        """
+        self._tap_input_catalog = catalog
+
+        catalog_entry = catalog.get_stream(self.name)
+        if catalog_entry:
+            self.primary_keys = catalog_entry.key_properties
+            self.replication_key = catalog_entry.replication_key
+            if catalog_entry.replication_method:
+                self.forced_replication_method = catalog_entry.replication_method
+
+
+        lifetime_giving_meta = self.metadata.get(('properties', 'lifetime_giving'), None)
+        self.include_lifetime_giving = True if lifetime_giving_meta and lifetime_giving_meta.selected else False
+
+        fundraiser_assignment_meta = self.metadata.get(('properties', 'fundraiser_assignment_list'), None)
+        self.include_fundraiser_assignment = True if fundraiser_assignment_meta and fundraiser_assignment_meta.selected else False
+
+
     def post_process(self, row: dict, context: Optional[dict] = None) -> dict:
         """As needed, append or transform raw data to match expected structure.
 
@@ -252,33 +281,34 @@ class ConstituentsStream(BlackbaudStream):
         constituent_id = row["id"]
 
         # LIFETIME GIVING
-        lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
-        resp = requests.get(lifetime_giving_endpoint, headers=self.http_headers)
-        # todo: test response code
-        lifetime_giving_json = resp.json()
-        giving_object = {**lifetime_giving_json}
-        for key in lifetime_giving_json:
-            if (key in self.flatten_list):
-                giving_object[key] = lifetime_giving_json[key]["value"]
-        row["lifetime_giving"] = giving_object
+        if self.include_lifetime_giving:
+            lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
+            resp = requests.get(lifetime_giving_endpoint, headers=self.http_headers)
+            # todo: test response code
+            lifetime_giving_json = resp.json()
+            giving_object = {**lifetime_giving_json}
+            for key in lifetime_giving_json:
+                if (key in self.flatten_list):
+                    giving_object[key] = lifetime_giving_json[key]["value"]
+            row["lifetime_giving"] = giving_object
 
         # FUNDRAISER ASSIGNMENT
-        include_inactive = 'true'
-        fundraiser_assignment_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/fundraiserassignments?include_inactive={include_inactive}"
-        resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)
-        # todo: test response code
-        fundraiser_assignment_json = resp.json()
-        fundraiser_list = fundraiser_assignment_json["value"]
-        # flatten amount -- here or during transform?
-        for item in fundraiser_list:
-            if ("amount" in item):
-                item["amount"] = item["amount"]["value"]
-        row["fundraiser_assignment_list"] = fundraiser_list
+        if self.include_fundraiser_assignment:
+            include_inactive = 'true'
+            fundraiser_assignment_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/fundraiserassignments?include_inactive={include_inactive}"
+            resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)
+            # todo: test response code
+            fundraiser_assignment_json = resp.json()
+            fundraiser_list = fundraiser_assignment_json["value"]
+            # flatten amount -- here or during transform?
+            for item in fundraiser_list:
+                if ("amount" in item):
+                    item["amount"] = item["amount"]["value"]
+            row["fundraiser_assignment_list"] = fundraiser_list
 
         # self.logger.info(row)
 
         return row
-
 
 
 class ConstituentsByListStream(BlackbaudStream):

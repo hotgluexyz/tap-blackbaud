@@ -55,14 +55,12 @@ class TapBlackbaud(Tap):
     def __init__(
         self,
         config: Optional[Union[dict, PurePath, str, List[Union[PurePath, str]]]] = None,
-        catalog: Union[PurePath, str, dict, None] = None,
-        state: Union[PurePath, str, dict, None] = None,
-        parse_env_config: bool = False,
+        *args,
+        **kwargs
     ) -> None:
         """Initialize the tap."""
         self.config_path = config
-        super().__init__(config=config, catalog=catalog, state=state, parse_env_config=parse_env_config)
-
+        super().__init__(config=config, *args, **kwargs)
 
     def discover_streams(self) -> List[Stream]:
         """Return a list of discovered streams."""

@@ -63,11 +63,29 @@ class BlackbaudAuthenticator(OAuthAuthenticator):
             )
         token_json = token_response.json()
         self.access_token = token_json["access_token"]
+        self.logger.info(f"New access token received: {self.access_token}")
         self.expires_in = token_json["expires_in"]
+        self.logger.info(f"New expires_in received: {self.expires_in}")
         self.last_refreshed = request_time
+        self.logger.info(f"New last_refreshed time: {self.last_refreshed}")
 
         if token_json.get("refresh_token") is not None:
             self.refresh_token = token_json["refresh_token"]
+            self.logger.info(f"New refresh_token: {self.refresh_token}")
+        
+        self.logger.info(f"New token response: {token_json}")
+
+
+class MockedResponse:
+    def __init__(self, response):
+        self.response = response
+    
+    def json(self):
+        return {}
+
+    @property
+    def headers(self):
+        return self.response.headers
 
 
 class BlackbaudStream(RESTStream):
@@ -90,6 +108,54 @@ class BlackbaudStream(RESTStream):
     def url_base(self) -> str:
         """Return the API URL root, configurable via tap settings."""
         return "https://api.sky.blackbaud.com"
+
+    def _request_with_backoff(
+        self, prepared_request: requests.PreparedRequest, context: Optional[dict]
+    ) -> requests.Response:
+        """TODO.
+
+        Args:
+            prepared_request: TODO
+            context: Stream partition or context dictionary.
+
+        Returns:
+            TODO
+
+        Raises:
+            RuntimeError: TODO
+        """
+        response = self.requests_session.send(prepared_request)
+        if self._LOG_REQUEST_METRICS:
+            extra_tags = {}
+            if self._LOG_REQUEST_METRIC_URLS:
+                extra_tags["url"] = cast(str, prepared_request.path_url)
+            self._write_request_duration_log(
+                endpoint=self.path,
+                response=response,
+                context=context,
+                extra_tags=extra_tags,
+            )
+        if response.status_code == 404:
+            self.logger.info("404 response received, skipping request for: {}".format(prepared_request.url))
+            return MockedResponse(response)
+        if response.status_code in [401, 403]:
+            self.logger.info("Failed request for {}".format(prepared_request.url))
+
+            self.logger.info(
+                f"Reason: {response.status_code} - {str(response.content)}"
+            )
+            raise RuntimeError(
+                "Requested resource was unauthorized, forbidden, or not found."
+            )
+        elif response.status_code >= 400:
+            raise RuntimeError(
+                f"Error making request to API: {prepared_request.url} "
+                f"[{response.status_code} - {str(response.content)}]".replace(
+                    "\\n", "\n"
+                )
+            )
+        self.logger.debug("Response received successfully.")
+        return response
 
     @property
     def authenticator(self) -> APIAuthenticatorBase:
@@ -322,6 +388,9 @@ class ConstituentsByListStream(BlackbaudStream):
     def get_lists(self, headers):
         endpoint = f"{self.url_base}/list/v1/lists?list_type=Constituent"
         r = requests.get(endpoint, headers=headers)
+        if r.status_code == 404:
+            return []
+        
         lists = r.json()
         return lists.get("value", [])
 
@@ -368,7 +437,12 @@ class ConstituentsByListStream(BlackbaudStream):
         logic.
         """
         params = {}
-        params["list_id"] = partition["list_id"]
+        if partition == None:
+            return params
+        
+        if partition.get("list_id"):
+            params["list_id"] = partition["list_id"]
+        
         return params
 
     schema = PropertiesList(

@@ -124,6 +124,7 @@ class BlackbaudStream(RESTStream):
         Raises:
             RuntimeError: TODO
         """
+        self.logger.info("ENTERING CUSTOM _request_with_backoff function")
         response = self.requests_session.send(prepared_request)
         if self._LOG_REQUEST_METRICS:
             extra_tags = {}

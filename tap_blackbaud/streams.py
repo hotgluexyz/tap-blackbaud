@@ -393,7 +393,7 @@ class ConstituentsByListStream(BlackbaudStream):
     def get_lists(self, headers):
         endpoint = f"{self.url_base}/list/v1/lists?list_type=Constituent"
         r = requests.get(endpoint, headers=headers)
-        if r.status_code == 404:
+        if r.status_code in [404, 500]:
             return []
         
         lists = r.json()

@@ -135,9 +135,14 @@ class BlackbaudStream(RESTStream):
                 context=context,
                 extra_tags=extra_tags,
             )
-        if response.status_code == 404:
-            self.logger.info("404 response received, skipping request for: {}".format(prepared_request.url))
+        if response.status_code in [404, 500]:
+            self.logger.info("{} response received, skipping request for: {}".format(
+                response.status_code,
+                prepared_request.url
+            ))
             return MockedResponse(response)
+        
+
         if response.status_code in [401, 403]:
             self.logger.info("Failed request for {}".format(prepared_request.url))
 
@@ -388,7 +393,7 @@ class ConstituentsByListStream(BlackbaudStream):
     def get_lists(self, headers):
         endpoint = f"{self.url_base}/list/v1/lists?list_type=Constituent"
         r = requests.get(endpoint, headers=headers)
-        if r.status_code == 404:
+        if r.status_code in [404, 500]:
             return []
         
         lists = r.json()

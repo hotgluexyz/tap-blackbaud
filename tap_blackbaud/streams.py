@@ -142,6 +142,7 @@ class BlackbaudStream(RESTStream):
             ))
             return MockedResponse(response)
         
+
         if response.status_code in [401, 403]:
             self.logger.info("Failed request for {}".format(prepared_request.url))
 

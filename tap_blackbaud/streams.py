@@ -1,6 +1,8 @@
 """Stream class for tap-blackbaud."""
 
 import requests
+import backoff
+from requests.exceptions import RequestException, ConnectionError, ReadTimeout
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, List, Iterable, cast
 
@@ -85,7 +87,23 @@ class MockedResponse:
 
     @property
     def headers(self):
+        if self.response == None:
+            return {}
         return self.response.headers
+
+
+class RetriableException(Exception):
+    pass
+
+
+def validate_status_code(e):
+    if e.response == None:
+        return True
+    
+    if e.response.status_code in [400, 401, 402, 403]:
+        return False
+    
+    return True
 
 
 class BlackbaudStream(RESTStream):
@@ -109,6 +127,20 @@ class BlackbaudStream(RESTStream):
         """Return the API URL root, configurable via tap settings."""
         return "https://api.sky.blackbaud.com"
 
+    @backoff.on_exception(
+        backoff.expo,
+        (
+            requests.exceptions.RequestException,
+            RetriableException,
+            ConnectionError,
+            ReadTimeout
+        ),
+        max_tries=5,
+        factor=2
+    )
+    def post(self, prepared_request, timeout=60):
+        return self.requests_session.send(prepared_request, timeout=timeout)
+    
     def _request_with_backoff(
         self, prepared_request: requests.PreparedRequest, context: Optional[dict]
     ) -> requests.Response:
@@ -124,7 +156,18 @@ class BlackbaudStream(RESTStream):
         Raises:
             RuntimeError: TODO
         """
-        response = self.requests_session.send(prepared_request)
+        response = None
+        try:
+            response = self.post(
+                prepared_request,
+                timeout=60
+            )
+        except Exception as e:
+            exc = e
+
+        if response == None:
+            return MockedResponse(response)
+
         if self._LOG_REQUEST_METRICS:
             extra_tags = {}
             if self._LOG_REQUEST_METRIC_URLS:
@@ -134,31 +177,22 @@ class BlackbaudStream(RESTStream):
                 response=response,
                 context=context,
                 extra_tags=extra_tags,
-            )
-        if response.status_code in [404, 500]:
+            )        
+        if response.status_code == 200:
+            return response
+
+        elif response.status_code > 500 or response.status_code == 404:
             self.logger.info("{} response received, skipping request for: {}".format(
                 response.status_code,
                 prepared_request.url
             ))
             return MockedResponse(response)
-        
 
-        if response.status_code in [401, 403]:
-            self.logger.info("Failed request for {}".format(prepared_request.url))
+        elif response.status_code in [400, 401, 402, 403]:
+            raise RuntimeError(
+                f"Failed request, response was '{response.json()}'."
+            )
 
-            self.logger.info(
-                f"Reason: {response.status_code} - {str(response.content)}"
-            )
-            raise RuntimeError(
-                "Requested resource was unauthorized, forbidden, or not found."
-            )
-        elif response.status_code >= 400:
-            raise RuntimeError(
-                f"Error making request to API: {prepared_request.url} "
-                f"[{response.status_code} - {str(response.content)}]".replace(
-                    "\\n", "\n"
-                )
-            )
         self.logger.debug("Response received successfully.")
         return response
 

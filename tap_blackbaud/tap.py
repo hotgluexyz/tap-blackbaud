@@ -82,7 +82,7 @@ class TapBlackbaud(Tap):
                 self.logger.error(exc)
                 traceback.print_exc()
                 raise exc
-            
+
 
     def update_config(self):
         """Update config.json with new access + refresh token."""

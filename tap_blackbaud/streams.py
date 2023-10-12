@@ -178,6 +178,7 @@ class BlackbaudStream(RESTStream):
                 context=context,
                 extra_tags=extra_tags,
             )        
+
         if response.status_code == 200:
             return response
 

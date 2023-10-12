@@ -69,17 +69,20 @@ class TapBlackbaud(Tap):
     def sync_all(self):
         """Sync all streams."""
         # Do the sync
-        exit_code = 0
+        exc = None
         try:
             super().sync_all()
         except Exception as e:
-            self.logger.error(e)
-            traceback.print_exc()
-            exit_code = 1
+            exc = e
         finally:
             # Update config if needed
             self.update_config()
-            exit(exit_code)
+            
+            if exc is not None:
+                self.logger.error(exc)
+                traceback.print_exc()
+                raise exc
+            
 
     def update_config(self):
         """Update config.json with new access + refresh token."""

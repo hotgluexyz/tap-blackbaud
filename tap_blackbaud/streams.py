@@ -5,10 +5,12 @@ import backoff
 from requests.exceptions import RequestException, ConnectionError, ReadTimeout
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, List, Iterable, cast
+from urllib.parse import parse_qsl
 
 from singer.schema import Schema
 
 from singer_sdk.streams import RESTStream
+from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.helpers._util import utc_now
 from singer_sdk.helpers._singer import (
     Catalog,
@@ -74,14 +76,14 @@ class BlackbaudAuthenticator(OAuthAuthenticator):
         if token_json.get("refresh_token") is not None:
             self.refresh_token = token_json["refresh_token"]
             self.logger.info(f"New refresh_token: {self.refresh_token}")
-        
+
         self.logger.info(f"New token response: {token_json}")
 
 
 class MockedResponse:
     def __init__(self, response):
         self.response = response
-    
+
     def json(self):
         return {}
 
@@ -99,11 +101,16 @@ class RetriableException(Exception):
 def validate_status_code(e):
     if e.response == None:
         return True
-    
+
     if e.response.status_code in [400, 401, 402, 403]:
         return False
-    
+
     return True
+
+
+class BlackbaudPaginator(BaseHATEOASPaginator):
+    def get_next_url(self, response):
+        return response.json().get("next_link")
 
 
 class BlackbaudStream(RESTStream):
@@ -140,7 +147,7 @@ class BlackbaudStream(RESTStream):
     )
     def post(self, prepared_request, timeout=60):
         return self.requests_session.send(prepared_request, timeout=timeout)
-    
+
     def _request_with_backoff(
         self, prepared_request: requests.PreparedRequest, context: Optional[dict]
     ) -> requests.Response:
@@ -178,7 +185,7 @@ class BlackbaudStream(RESTStream):
                 context=context,
                 extra_tags=extra_tags,
             )
-        
+
         if response.status_code == 200:
             return response
 
@@ -220,6 +227,16 @@ class BlackbaudStream(RESTStream):
         result['Bb-Api-Subscription-Key'] = self._config["subscription_key"]
         return result
 
+    def get_new_paginator(self):
+        return BlackbaudPaginator()
+
+    def get_url_params(self, context, next_page_token):
+        params = {}
+
+        if next_page_token:
+            params.update(parse_qsl(next_page_token.query))
+
+        return params
 
 class ConstituentListsStream(BlackbaudStream):
     name = "constituent_lists"
@@ -430,7 +447,7 @@ class ConstituentsByListStream(BlackbaudStream):
         r = requests.get(endpoint, headers=headers)
         if r.status_code in [404, 500]:
             return []
-        
+
         lists = r.json()
         return lists.get("value", [])
 
@@ -476,13 +493,13 @@ class ConstituentsByListStream(BlackbaudStream):
         If paging is supported, developers may override this method with specific paging
         logic.
         """
-        params = {}
+        params = super().get_url_params(partition, next_page_token)
         if partition == None:
             return params
-        
+
         if partition.get("list_id"):
             params["list_id"] = partition["list_id"]
-        
+
         return params
 
     schema = PropertiesList(

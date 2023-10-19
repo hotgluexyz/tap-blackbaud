@@ -10,7 +10,6 @@ from urllib.parse import parse_qsl
 from singer.schema import Schema
 
 from singer_sdk.streams import RESTStream
-from singer_sdk.pagination import BaseHATEOASPaginator
 from singer_sdk.helpers._util import utc_now
 from singer_sdk.helpers._singer import (
     Catalog,
@@ -107,10 +106,6 @@ def validate_status_code(e):
 
     return True
 
-
-class BlackbaudPaginator(BaseHATEOASPaginator):
-    def get_next_url(self, response):
-        return response.json().get("next_link")
 
 
 class BlackbaudStream(RESTStream):
@@ -227,16 +222,23 @@ class BlackbaudStream(RESTStream):
         result['Bb-Api-Subscription-Key'] = self._config["subscription_key"]
         return result
 
-    def get_new_paginator(self):
-        return BlackbaudPaginator()
+    def get_next_page_token(
+        self, response: requests.Response, previous_token: Optional[Any]
+    ) -> Any:
+        res = response.json()
+        next_page_link = res.get("next_link", None)
+        if next_page_link:
+            return dict(parse_qsl(next_page_link.split("?")[1]))
+        return {}
 
-    def get_url_params(self, context, next_page_token):
-        params = {}
-
+    def get_url_params(
+        self, context: Optional[dict], next_page_token: Optional[Any]
+    ) -> Dict[str, Any]:
+        params = super().get_url_params(context, next_page_token)
         if next_page_token:
-            params.update(parse_qsl(next_page_token.query))
-
+            params.update(next_page_token)
         return params
+
 
 class ConstituentListsStream(BlackbaudStream):
     name = "constituent_lists"

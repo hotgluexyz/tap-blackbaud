@@ -423,8 +423,13 @@ class ConstituentsStream(BlackbaudStream):
             fundraiser_assignment_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/fundraiserassignments?include_inactive={include_inactive}"
             resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)
             # todo: test response code
+            if resp.status_code >= 400:
+                self.logger.info(f"Failed to request fundraiser assignments for constituent: {constituent_id}")
+
+
             fundraiser_assignment_json = resp.json()
-            fundraiser_list = fundraiser_assignment_json["value"]
+            self.logger.info(f"Response content: {fundraiser_assignment_json}")
+            fundraiser_list = fundraiser_assignment_json.get("value", [])
             # flatten amount -- here or during transform?
             for item in fundraiser_list:
                 if ("amount" in item):

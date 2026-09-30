@@ -34,6 +34,14 @@ from singer_sdk.typing import (
     StringType,
 )
 
+from tap_blackbaud.demo import (
+    DEMO_CONSTITUENT_LIMIT,
+    DEMO_GIFT_LIMIT,
+    demo_mode_enabled,
+    get_giving_cohort,
+    sort_by_id,
+)
+
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
 
@@ -283,7 +291,12 @@ class BlackbaudStream(RESTStream):
         return {}
 
     def _last_modified_param(self, context: Optional[dict]) -> str:
-        """Build last_modified from bookmark/start_date, else epoch for full sync."""
+        """Build last_modified from bookmark/start_date, else epoch for full sync.
+
+        In demo_mode always replay from epoch so capped extracts stay deterministic.
+        """
+        if demo_mode_enabled(self._config):
+            return "0001-01-01"
         starting = None
         if self.replication_key:
             try:
@@ -325,7 +338,10 @@ class ConstituentsStream(BlackbaudStream):
     path = "/constituent/v1/constituents"
     primary_keys = ["id"]
     replication_key = "date_modified"
-    record_limit = 200
+    # Raised so the giving-history cohort fits; demo_mode filters before capping.
+    record_limit = DEMO_CONSTITUENT_LIMIT
+    include_lifetime_giving = False
+    include_fundraiser_assignment = False
 
     flatten_list = set(["total_committed_matching_gifts", "total_giving", "total_pledge_balance", "total_received_giving", "total_received_matching_gifts", "total_soft_credits"])
 
@@ -425,12 +441,55 @@ class ConstituentsStream(BlackbaudStream):
         if next_page_token:
             return {}
         page_size = 500
-        if self.record_limit is not None:
-            page_size = min(page_size, self.record_limit)
         return {
             "limit": page_size,
             "last_modified": self._last_modified_param(partition),
         }
+
+    def request_records(self, context: Optional[dict]) -> Iterable[dict]:
+        """In demo_mode, emit constituents that have a giving history (stable ids)."""
+        if not demo_mode_enabled(self._config):
+            yield from super().request_records(context)
+            return
+
+        headers = dict(self.http_headers)
+        authenticator = self.authenticator
+        if authenticator:
+            headers.update(authenticator.auth_headers or {})
+
+        cohort = get_giving_cohort(self._config, headers, logger=self.logger)
+        donor_ids = cohort.get("constituent_ids") or []
+        if not donor_ids:
+            self.logger.warning("demo_mode: no donors with gifts discovered; emitting nothing")
+            return
+
+        # Fetch by id so we don't depend on list-scan order for the person records.
+        matched: List[dict] = []
+        for cid in donor_ids:
+            url = f"{self.url_base}/constituent/v1/constituents/{cid}"
+            resp = self.requests_session.get(url, headers=headers, timeout=60)
+            if resp.status_code != 200:
+                self.logger.warning(
+                    "demo_mode: failed GET constituent %s (%s)", cid, resp.status_code
+                )
+                continue
+            row = resp.json()
+            if isinstance(row, dict) and row.get("id"):
+                # Apply catalog enrichment (lifetime giving / fundraiser) when selected.
+                row = self.post_process(row, context)
+                matched.append(row)
+
+        ordered = sort_by_id(matched)
+        limit = self.record_limit or DEMO_CONSTITUENT_LIMIT
+        ordered = ordered[:limit]
+        self.logger.info(
+            "demo_mode constituents with giving history: emitting=%s of donors=%s",
+            len(ordered),
+            len(donor_ids),
+        )
+        for row in ordered:
+            self._records_emitted += 1
+            yield row
 
     def apply_catalog(self, catalog: Catalog) -> None:
         """Apply a catalog dict, updating any settings overridden within the catalog.
@@ -671,7 +730,7 @@ class GiftsStream(BlackbaudStream):
     path = "/gift/v1/gifts"
     primary_keys = ["id"]
     replication_key = "date_modified"
-    record_limit = 400
+    record_limit = DEMO_GIFT_LIMIT
 
     schema = PropertiesList(
         Property("id", StringType),
@@ -770,10 +829,172 @@ class GiftsStream(BlackbaudStream):
         """Return gift list params including last_modified for sync."""
         if next_page_token:
             return {}
-        page_size = 500
-        if self.record_limit is not None:
-            page_size = min(page_size, max(self.record_limit - self._records_emitted, 1))
         return {
-            "limit": page_size,
+            "limit": 500,
             "last_modified": self._last_modified_param(partition),
         }
+
+    def request_records(self, context: Optional[dict]) -> Iterable[dict]:
+        """In demo_mode, emit gifts for donors discovered via giving history."""
+        if not demo_mode_enabled(self._config):
+            yield from super().request_records(context)
+            return
+
+        headers = dict(self.http_headers)
+        authenticator = self.authenticator
+        if authenticator:
+            headers.update(authenticator.auth_headers or {})
+
+        cohort = get_giving_cohort(self._config, headers, logger=self.logger)
+        gifts = list(cohort.get("gifts") or [])
+        limit = self.record_limit or DEMO_GIFT_LIMIT
+        ordered = sort_by_id(gifts)[:limit]
+        self.logger.info(
+            "demo_mode gifts for giving-history donors: emitting=%s donors=%s",
+            len(ordered),
+            len(cohort.get("constituent_ids") or []),
+        )
+        for row in ordered:
+            self._records_emitted += 1
+            yield row
+
+
+class ConstituentCustomFieldsStream(BlackbaudStream):
+    """All-constituent custom fields (attributes) for Apteco segmentation."""
+
+    name = "constituent_custom_fields"
+    path = "/constituent/v1/constituents/customfields"
+    primary_keys = ["id"]
+    replication_key = None
+    record_limit = None
+
+    schema = PropertiesList(
+        Property("id", StringType),
+        Property("constituent_id", StringType),
+        Property("category", StringType),
+        Property("type", StringType),
+        Property("value", StringType),
+        Property("comment", StringType),
+        Property("date", DateTimeType),
+        Property("date_added", DateTimeType),
+        Property("date_modified", DateTimeType),
+    ).to_dict()
+
+    def get_url_params(
+        self, partition: Optional[dict], next_page_token: Optional[Any] = None
+    ) -> Dict[str, Any]:
+        if next_page_token:
+            return {}
+        return {"limit": 500}
+
+    def request_records(self, context: Optional[dict]) -> Iterable[dict]:
+        """Restrict to demo giving-history constituents when demo_mode is on."""
+        headers = dict(self.http_headers)
+        authenticator = self.authenticator
+        if authenticator:
+            headers.update(authenticator.auth_headers or {})
+
+        allowed_ids: set = set()
+        if demo_mode_enabled(self._config):
+            cohort = get_giving_cohort(self._config, headers, logger=self.logger)
+            allowed_ids = set(cohort.get("constituent_ids") or [])
+
+        emitted = 0
+        try:
+            for row in super().request_records(context):
+                cid = str(row.get("constituent_id") or "")
+                if allowed_ids and cid not in allowed_ids:
+                    continue
+                yield row
+                emitted += 1
+        except Exception as exc:
+            # Some envs 404 the list-all customfields endpoint.
+            self.logger.warning("constituent_custom_fields unavailable: %s", exc)
+            return
+
+        self.logger.info(
+            "demo_mode constituent_custom_fields emitted=%s donors=%s",
+            emitted,
+            len(allowed_ids),
+        )
+
+
+class ConstituenciesStream(BlackbaudStream):
+    """Constituent constituencies (tag-like) for Apteco segmentation.
+
+    List-all is unreliable (404 on some envs). In demo_mode we fetch per donor
+    from the giving-history cohort via
+    ``GET /constituent/v1/constituents/{id}/constituencies``.
+    """
+
+    name = "constituencies"
+    path = "/constituent/v1/constituents/{constituent_id}/constituencies"
+    primary_keys = ["id"]
+    replication_key = None
+    record_limit = None
+
+    schema = PropertiesList(
+        Property("id", StringType),
+        Property("constituent_id", StringType),
+        Property("constituency", StringType),
+        Property("date_from", ObjectType(
+            Property("d", IntegerType),
+            Property("m", IntegerType),
+            Property("y", IntegerType),
+        )),
+        Property("date_to", ObjectType(
+            Property("d", IntegerType),
+            Property("m", IntegerType),
+            Property("y", IntegerType),
+        )),
+        Property("sequence", IntegerType),
+    ).to_dict()
+
+    def get_url_params(
+        self, partition: Optional[dict], next_page_token: Optional[Any] = None
+    ) -> Dict[str, Any]:
+        if next_page_token:
+            return {}
+        return {"limit": 500}
+
+    def request_records(self, context: Optional[dict]) -> Iterable[dict]:
+        headers = dict(self.http_headers)
+        authenticator = self.authenticator
+        if authenticator:
+            headers.update(authenticator.auth_headers or {})
+
+        donor_ids: List[str] = []
+        if demo_mode_enabled(self._config):
+            cohort = get_giving_cohort(self._config, headers, logger=self.logger)
+            donor_ids = list(cohort.get("constituent_ids") or [])
+
+        emitted = 0
+        if not donor_ids:
+            self.logger.warning(
+                "constituencies: no donor ids available; skipping stream"
+            )
+            return
+
+        for cid in donor_ids:
+            url = f"{self.url_base}/constituent/v1/constituents/{cid}/constituencies"
+            resp = self.requests_session.get(
+                url, headers=headers, params={"limit": 500}, timeout=60
+            )
+            if resp.status_code in (404, 403):
+                continue
+            if resp.status_code != 200:
+                self.logger.warning(
+                    "constituencies for %s failed (%s)", cid, resp.status_code
+                )
+                continue
+            for row in (resp.json() or {}).get("value") or []:
+                if isinstance(row, dict):
+                    row.setdefault("constituent_id", cid)
+                    yield row
+                    emitted += 1
+
+        self.logger.info(
+            "demo_mode constituencies emitted=%s donors=%s",
+            emitted,
+            len(donor_ids),
+        )

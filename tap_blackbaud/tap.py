@@ -26,6 +26,8 @@ from tap_blackbaud.streams import (
     ConstituentsByListStream,
     EducationsStream,
     GiftsStream,
+    ConstituentCustomFieldsStream,
+    ConstituenciesStream,
 )
 
 
@@ -36,6 +38,8 @@ STREAM_TYPES = [
     ConstituentsByListStream,
     EducationsStream,
     GiftsStream,
+    ConstituentCustomFieldsStream,
+    ConstituenciesStream,
 ]
 
 
@@ -50,7 +54,9 @@ class TapBlackbaud(Tap):
         Property("refresh_token", StringType, required=True),
         Property("redirect_uri", StringType, required=True),
         Property("subscription_key", StringType, required=True),
-        Property("start_date", DateTimeType)
+        Property("start_date", DateTimeType),
+        Property("demo_mode", BooleanType),
+        Property("demo_allowlist_path", StringType),
     ).to_dict()
 
 

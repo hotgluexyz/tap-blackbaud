@@ -28,6 +28,7 @@ from tap_blackbaud.streams import (
     GiftsStream,
     ConstituentCustomFieldsStream,
     ConstituenciesStream,
+    ConstituentCodesStream,
 )
 
 
@@ -40,6 +41,7 @@ STREAM_TYPES = [
     GiftsStream,
     ConstituentCustomFieldsStream,
     ConstituenciesStream,
+    ConstituentCodesStream,
 ]
 
 

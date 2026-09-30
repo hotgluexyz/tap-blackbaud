@@ -918,12 +918,7 @@ class ConstituentCustomFieldsStream(BlackbaudStream):
 
 
 class ConstituenciesStream(BlackbaudStream):
-    """Constituent constituencies (tag-like) for Apteco segmentation.
-
-    List-all is unreliable (404 on some envs). In demo_mode we fetch per donor
-    from the giving-history cohort via
-    ``GET /constituent/v1/constituents/{id}/constituencies``.
-    """
+    """Legacy constituencies endpoint (often 404). Prefer ConstituentCodesStream."""
 
     name = "constituencies"
     path = "/constituent/v1/constituents/{constituent_id}/constituencies"
@@ -993,6 +988,95 @@ class ConstituenciesStream(BlackbaudStream):
 
         self.logger.info(
             "demo_mode constituencies emitted=%s donors=%s",
+            emitted,
+            len(donor_ids),
+        )
+
+
+class ConstituentCodesStream(BlackbaudStream):
+    """Constituent codes (manually managed constituency labels) → Apteco tags.
+
+    RE NXT UI "Intelligent Tags" are system-generated and not exposed via SKY API.
+    Constituent codes are the editable constituency-style labels, fetched per donor:
+    ``GET /constituent/v1/constituents/{id}/constituentcodes``.
+    """
+
+    name = "constituent_codes"
+    path = "/constituent/v1/constituents/{constituent_id}/constituentcodes"
+    primary_keys = ["id"]
+    replication_key = None
+    record_limit = None
+
+    schema = PropertiesList(
+        Property("id", StringType),
+        Property("constituent_id", StringType),
+        Property("description", StringType),
+        Property("inactive", BooleanType),
+        Property("sequence", IntegerType),
+        Property("date_added", DateTimeType),
+        Property("date_modified", DateTimeType),
+        Property("start", ObjectType(
+            Property("d", IntegerType),
+            Property("m", IntegerType),
+            Property("y", IntegerType),
+        )),
+        Property("end", ObjectType(
+            Property("d", IntegerType),
+            Property("m", IntegerType),
+            Property("y", IntegerType),
+        )),
+    ).to_dict()
+
+    def get_url_params(
+        self, partition: Optional[dict], next_page_token: Optional[Any] = None
+    ) -> Dict[str, Any]:
+        if next_page_token:
+            return {}
+        return {"limit": 500}
+
+    def request_records(self, context: Optional[dict]) -> Iterable[dict]:
+        headers = dict(self.http_headers)
+        authenticator = self.authenticator
+        if authenticator:
+            headers.update(authenticator.auth_headers or {})
+
+        donor_ids: List[str] = []
+        if demo_mode_enabled(self._config):
+            cohort = get_giving_cohort(self._config, headers, logger=self.logger)
+            donor_ids = list(cohort.get("constituent_ids") or [])
+
+        emitted = 0
+        if not donor_ids:
+            self.logger.warning(
+                "constituent_codes: no donor ids available; skipping stream"
+            )
+            return
+
+        for cid in donor_ids:
+            url = (
+                f"{self.url_base}/constituent/v1/constituents/{cid}/constituentcodes"
+            )
+            resp = self.requests_session.get(
+                url, headers=headers, params={"limit": 500}, timeout=60
+            )
+            if resp.status_code in (404, 403):
+                continue
+            if resp.status_code != 200:
+                self.logger.warning(
+                    "constituent_codes for %s failed (%s)", cid, resp.status_code
+                )
+                continue
+            for row in (resp.json() or {}).get("value") or []:
+                if not isinstance(row, dict):
+                    continue
+                if row.get("inactive"):
+                    continue
+                row.setdefault("constituent_id", cid)
+                yield row
+                emitted += 1
+
+        self.logger.info(
+            "demo_mode constituent_codes emitted=%s donors=%s",
             emitted,
             len(donor_ids),
         )

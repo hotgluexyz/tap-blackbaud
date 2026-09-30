@@ -24,7 +24,8 @@ from tap_blackbaud.streams import (
     ConstituentListsStream,
     ConstituentsStream,
     ConstituentsByListStream,
-    EducationsStream
+    EducationsStream,
+    GiftsStream,
 )
 
 
@@ -33,7 +34,8 @@ STREAM_TYPES = [
     ConstituentListsStream,
     ConstituentsStream,
     ConstituentsByListStream,
-    EducationsStream
+    EducationsStream,
+    GiftsStream,
 ]
 
 

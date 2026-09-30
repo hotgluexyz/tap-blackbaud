@@ -220,6 +220,62 @@ class BlackbaudStream(RESTStream):
         result['Bb-Api-Subscription-Key'] = self._config["subscription_key"]
         return result
 
+    def get_next_page_token(
+        self, response: requests.Response, previous_token: Optional[Any]
+    ) -> Optional[Any]:
+        """Return Blackbaud next_link URL, or None when paging is complete."""
+        if response is None or isinstance(response, MockedResponse):
+            return None
+        try:
+            data = response.json()
+        except Exception:
+            return None
+        if not data.get("value"):
+            return None
+        return data.get("next_link")
+
+    def prepare_request(
+        self, context: Optional[dict], next_page_token: Optional[Any] = None
+    ) -> requests.PreparedRequest:
+        """Use next_link as the full request URL when paginating."""
+        if next_page_token:
+            headers = dict(self.http_headers)
+            authenticator = self.authenticator
+            if authenticator:
+                headers.update(authenticator.auth_headers or {})
+            return self.requests_session.prepare_request(
+                requests.Request(
+                    method=self.rest_method,
+                    url=next_page_token,
+                    headers=headers,
+                )
+            )
+        return super().prepare_request(context, next_page_token=next_page_token)
+
+    def get_url_params(
+        self, partition: Optional[dict], next_page_token: Optional[Any] = None
+    ) -> Dict[str, Any]:
+        """Return URL params; skipped when following a next_link."""
+        if next_page_token:
+            return {}
+        return {}
+
+    def _last_modified_param(self, context: Optional[dict]) -> str:
+        """Build last_modified from bookmark/start_date, else epoch for full sync."""
+        starting = None
+        if self.replication_key:
+            try:
+                starting = self.get_starting_timestamp(context)
+            except Exception:
+                starting = None
+        if starting is None and self.config.get("start_date"):
+            starting = self.config["start_date"]
+        if starting is None:
+            return "0001-01-01"
+        if hasattr(starting, "strftime"):
+            return starting.strftime("%Y-%m-%dT%H:%M:%S")
+        return str(starting).replace("Z", "")
+
 
 class ConstituentListsStream(BlackbaudStream):
     name = "constituent_lists"
@@ -246,7 +302,7 @@ class ConstituentsStream(BlackbaudStream):
     name = "constituents"
     path = "/constituent/v1/constituents"
     primary_keys = ["id"]
-    replication_key = None
+    replication_key = "date_modified"
 
     flatten_list = set(["total_committed_matching_gifts", "total_giving", "total_pledge_balance", "total_received_giving", "total_received_matching_gifts", "total_soft_credits"])
 
@@ -339,6 +395,16 @@ class ConstituentsStream(BlackbaudStream):
         ))
     ).to_dict()
 
+    def get_url_params(
+        self, partition: Optional[dict], next_page_token: Optional[Any] = None
+    ) -> Dict[str, Any]:
+        """Return constituent list params including last_modified for sync."""
+        if next_page_token:
+            return {}
+        return {
+            "limit": 500,
+            "last_modified": self._last_modified_param(partition),
+        }
 
     def apply_catalog(self, catalog: Catalog) -> None:
         """Apply a catalog dict, updating any settings overridden within the catalog.
@@ -471,18 +537,12 @@ class ConstituentsByListStream(BlackbaudStream):
         partition: Optional[dict],
         next_page_token: Optional[Any] = None
     ) -> Dict[str, Any]:
-        """Return a dictionary of values to be used in URL parameterization.
-
-        If paging is supported, developers may override this method with specific paging
-        logic.
-        """
-        params = {}
-        if partition == None:
-            return params
-        
-        if partition.get("list_id"):
+        """Return a dictionary of values to be used in URL parameterization."""
+        if next_page_token:
+            return {}
+        params = super().get_url_params(partition, next_page_token)
+        if partition and partition.get("list_id"):
             params["list_id"] = partition["list_id"]
-        
         return params
 
     schema = PropertiesList(
@@ -576,3 +636,114 @@ class EducationsStream(BlackbaudStream):
         Property("school", StringType),
         Property("type", StringType)
     ).to_dict()
+
+
+class GiftsStream(BlackbaudStream):
+    """Gift list stream from Raiser's Edge NXT Gift API."""
+
+    name = "gifts"
+    path = "/gift/v1/gifts"
+    primary_keys = ["id"]
+    replication_key = "date_modified"
+
+    schema = PropertiesList(
+        Property("id", StringType),
+        Property("amount", ObjectType(
+            Property("value", NumberType),
+        )),
+        Property("balance", ObjectType(
+            Property("value", NumberType),
+        )),
+        Property("batch_number", StringType),
+        Property("constituent_id", StringType),
+        Property("date", DateTimeType),
+        Property("date_added", DateTimeType),
+        Property("date_modified", DateTimeType),
+        Property("gift_status", StringType),
+        Property("is_anonymous", BooleanType),
+        Property("constituency", StringType),
+        Property("lookup_id", StringType),
+        Property("origin", StringType),
+        Property("post_date", DateTimeType),
+        Property("post_status", StringType),
+        Property("reference", StringType),
+        Property("subtype", StringType),
+        Property("type", StringType),
+        Property("gift_code", StringType),
+        Property("linked_gifts", ArrayType(StringType)),
+        Property("gift_splits", ArrayType(
+            ObjectType(
+                Property("id", StringType),
+                Property("amount", ObjectType(
+                    Property("value", NumberType),
+                )),
+                Property("appeal_id", StringType),
+                Property("campaign_id", StringType),
+                Property("fund_id", StringType),
+                Property("package_id", StringType),
+            )
+        )),
+        Property("payments", ArrayType(
+            ObjectType(
+                Property("payment_method", StringType),
+                Property("account_token", StringType),
+                Property("bbps_configuration_id", StringType),
+                Property("bbps_transaction_id", StringType),
+                Property("check_number", StringType),
+                Property("checkout_transaction_id", StringType),
+                Property("reference", StringType),
+            )
+        )),
+        Property("acknowledgements", ArrayType(
+            ObjectType(
+                Property("date", DateTimeType),
+                Property("letter", StringType),
+                Property("status", StringType),
+            )
+        )),
+        Property("receipts", ArrayType(
+            ObjectType(
+                Property("amount", ObjectType(
+                    Property("value", NumberType),
+                )),
+                Property("date", DateTimeType),
+                Property("number", IntegerType),
+                Property("status", StringType),
+            )
+        )),
+        Property("soft_credits", ArrayType(
+            ObjectType(
+                Property("id", StringType),
+                Property("amount", ObjectType(
+                    Property("value", NumberType),
+                )),
+                Property("constituent_id", StringType),
+                Property("gift_id", StringType),
+            )
+        )),
+        Property("fundraisers", ArrayType(
+            ObjectType(
+                Property("amount", ObjectType(
+                    Property("value", NumberType),
+                )),
+                Property("constituent_id", StringType),
+            )
+        )),
+        Property("recurring_gift_schedule", ObjectType(
+            Property("end_date", DateTimeType),
+            Property("frequency", StringType),
+            Property("start_date", DateTimeType),
+            Property("next_transaction_date", DateTimeType),
+        )),
+    ).to_dict()
+
+    def get_url_params(
+        self, partition: Optional[dict], next_page_token: Optional[Any] = None
+    ) -> Dict[str, Any]:
+        """Return gift list params including last_modified for sync."""
+        if next_page_token:
+            return {}
+        return {
+            "limit": 500,
+            "last_modified": self._last_modified_param(partition),
+        }

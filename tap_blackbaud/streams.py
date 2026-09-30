@@ -541,29 +541,27 @@ class ConstituentsStream(BlackbaudStream):
         if self.include_lifetime_giving:
             lifetime_giving_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/givingsummary/lifetimegiving"
             resp = requests.get(lifetime_giving_endpoint, headers=self.http_headers)
-            # todo: test response code
-            lifetime_giving_json = resp.json()
-            giving_object = {**lifetime_giving_json}
-            for key in lifetime_giving_json:
-                if (key in self.flatten_list):
-                    giving_object[key] = lifetime_giving_json[key]["value"]
-            row["lifetime_giving"] = giving_object
+            if resp.status_code == 200:
+                lifetime_giving_json = resp.json() or {}
+                if isinstance(lifetime_giving_json, dict):
+                    giving_object = {**lifetime_giving_json}
+                    for key in list(lifetime_giving_json):
+                        if key in self.flatten_list and isinstance(lifetime_giving_json[key], dict):
+                            giving_object[key] = lifetime_giving_json[key].get("value")
+                    row["lifetime_giving"] = giving_object
 
         # FUNDRAISER ASSIGNMENT
         if self.include_fundraiser_assignment:
             include_inactive = 'true'
             fundraiser_assignment_endpoint = f"{self.url_base}/constituent/v1/constituents/{constituent_id}/fundraiserassignments?include_inactive={include_inactive}"
             resp = requests.get(fundraiser_assignment_endpoint, headers=self.http_headers)
-            # todo: test response code
-            fundraiser_assignment_json = resp.json()
-            fundraiser_list = fundraiser_assignment_json["value"]
-            # flatten amount -- here or during transform?
-            for item in fundraiser_list:
-                if ("amount" in item):
-                    item["amount"] = item["amount"]["value"]
-            row["fundraiser_assignment_list"] = fundraiser_list
-
-        # self.logger.info(row)
+            if resp.status_code == 200:
+                fundraiser_assignment_json = resp.json() or {}
+                fundraiser_list = fundraiser_assignment_json.get("value") or []
+                for item in fundraiser_list:
+                    if isinstance(item, dict) and isinstance(item.get("amount"), dict):
+                        item["amount"] = item["amount"].get("value")
+                row["fundraiser_assignment_list"] = fundraiser_list
 
         return row
 

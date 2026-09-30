@@ -110,6 +110,8 @@ class BlackbaudStream(RESTStream):
     """Blackbaud stream class."""
 
     records_jsonpath: str = "$.value[*]"
+    # When set, stop syncing this stream after N records (demo / safety guard).
+    record_limit: Optional[int] = None
 
     def __init__(
         self,
@@ -121,6 +123,40 @@ class BlackbaudStream(RESTStream):
         """Initialize the Blackbaud stream."""
         super().__init__(name=name, schema=schema, tap=tap, path=path)
         self._config = tap._config
+        self._records_emitted = 0
+
+    def request_records(self, context: Optional[dict]) -> Iterable[dict]:
+        """Yield records, stopping early when record_limit is reached."""
+        limit = self.record_limit
+        for row in super().request_records(context):
+            yield row
+            self._records_emitted += 1
+            if limit is not None and self._records_emitted >= limit:
+                self.logger.info(
+                    "Reached record_limit=%s for stream '%s'; stopping pagination.",
+                    limit,
+                    self.name,
+                )
+                return
+
+    def get_next_page_token(
+        self, response: requests.Response, previous_token: Optional[Any]
+    ) -> Optional[Any]:
+        """Return Blackbaud next_link URL, or None when paging is complete."""
+        if (
+            self.record_limit is not None
+            and self._records_emitted >= self.record_limit
+        ):
+            return None
+        if response is None or isinstance(response, MockedResponse):
+            return None
+        try:
+            data = response.json()
+        except Exception:
+            return None
+        if not data.get("value"):
+            return None
+        return data.get("next_link")
 
     @property
     def url_base(self) -> str:
@@ -220,20 +256,6 @@ class BlackbaudStream(RESTStream):
         result['Bb-Api-Subscription-Key'] = self._config["subscription_key"]
         return result
 
-    def get_next_page_token(
-        self, response: requests.Response, previous_token: Optional[Any]
-    ) -> Optional[Any]:
-        """Return Blackbaud next_link URL, or None when paging is complete."""
-        if response is None or isinstance(response, MockedResponse):
-            return None
-        try:
-            data = response.json()
-        except Exception:
-            return None
-        if not data.get("value"):
-            return None
-        return data.get("next_link")
-
     def prepare_request(
         self, context: Optional[dict], next_page_token: Optional[Any] = None
     ) -> requests.PreparedRequest:
@@ -303,6 +325,7 @@ class ConstituentsStream(BlackbaudStream):
     path = "/constituent/v1/constituents"
     primary_keys = ["id"]
     replication_key = "date_modified"
+    record_limit = 200
 
     flatten_list = set(["total_committed_matching_gifts", "total_giving", "total_pledge_balance", "total_received_giving", "total_received_matching_gifts", "total_soft_credits"])
 
@@ -401,8 +424,11 @@ class ConstituentsStream(BlackbaudStream):
         """Return constituent list params including last_modified for sync."""
         if next_page_token:
             return {}
+        page_size = 500
+        if self.record_limit is not None:
+            page_size = min(page_size, self.record_limit)
         return {
-            "limit": 500,
+            "limit": page_size,
             "last_modified": self._last_modified_param(partition),
         }
 
@@ -645,6 +671,7 @@ class GiftsStream(BlackbaudStream):
     path = "/gift/v1/gifts"
     primary_keys = ["id"]
     replication_key = "date_modified"
+    record_limit = 400
 
     schema = PropertiesList(
         Property("id", StringType),
@@ -743,7 +770,10 @@ class GiftsStream(BlackbaudStream):
         """Return gift list params including last_modified for sync."""
         if next_page_token:
             return {}
+        page_size = 500
+        if self.record_limit is not None:
+            page_size = min(page_size, max(self.record_limit - self._records_emitted, 1))
         return {
-            "limit": 500,
+            "limit": page_size,
             "last_modified": self._last_modified_param(partition),
         }

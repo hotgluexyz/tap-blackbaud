@@ -1,0 +1,2435 @@
+{
+  "constituents": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "address": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "address_lines": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "constituent_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "county": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date_added": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "date_modified": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "do_not_mail": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "end": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "formatted_address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "inactive": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "postal_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "preferred": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "seasonal_end": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "d": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "int32"
+              },
+              "m": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "int32"
+              },
+              "y": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "int32"
+              }
+            }
+          },
+          "seasonal_start": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "d": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "int32"
+              },
+              "m": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "int32"
+              },
+              "y": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "int32"
+              }
+            }
+          },
+          "start": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "state": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "suburb": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "age": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "format": "int32"
+      },
+      "birthdate": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "d": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "m": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "y": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "date_added": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_modified": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "deceased": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "deceased_date": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "d": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "m": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "y": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "email": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "constituent_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date_added": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "date_modified": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "do_not_email": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "inactive": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "primary": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "first": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "former_name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fundraiser_status": {
+        "enum": [
+          "Active",
+          "Inactive",
+          "None",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "constituent_assigned_fundraisers": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fundraiser_name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "gender": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "gives_anonymously": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "inactive": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "last": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "lookup_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "marital_status": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "middle": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "online_presence": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "constituent_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date_added": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "date_modified": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "inactive": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "primary": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "phone": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "constituent_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date_added": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "date_modified": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "do_not_call": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "inactive": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "primary": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "preferred_name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "spouse": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "first": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_head_of_household": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      },
+      "suffix": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "suffix_2": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "title_2": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": {
+        "enum": [
+          "Individual",
+          "Organization",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "birthplace": {"type": ["string", "null"]},
+      "ethnicity": {"type": ["string", "null"]},
+      "income": {"type": ["string", "null"]},
+      "religion": {"type": ["string", "null"]},
+      "industry": {"type": ["string", "null"]},
+      "matches_gifts": {"type": ["boolean", "null"]},
+      "matching_gift_per_gift_min": {
+        "type": ["object", "null"],
+        "properties": {"value": {"type": ["number", "null"]}}
+      },
+      "matching_gift_per_gift_max": {
+        "type": ["object", "null"],
+        "properties": {"value": {"type": ["number", "null"]}}
+      },
+      "matching_gift_total_min": {
+        "type": ["object", "null"],
+        "properties": {"value": {"type": ["number", "null"]}}
+      },
+      "matching_gift_total_max": {
+        "type": ["object", "null"],
+        "properties": {"value": {"type": ["number", "null"]}}
+      },
+      "matching_gift_factor": {"type": ["number", "null"]},
+      "matching_gift_notes": {"type": ["string", "null"]},
+      "num_employees": {"type": ["integer", "null"]},
+      "is_memorial": {"type": ["boolean", "null"]},
+      "is_solicitor": {"type": ["boolean", "null"]},
+      "no_valid_address": {"type": ["boolean", "null"]},
+      "receipt_type": {"type": ["string", "null"]},
+      "target": {"type": ["string", "null"]},
+      "requests_no_email": {"type": ["boolean", "null"]},
+      "import_id": {"type": ["string", "null"]},
+      "is_constituent": {"type": ["boolean", "null"]},
+      "num_subsidiaries": {"type": ["integer", "null"]},
+      "parent_corporation_name": {"type": ["string", "null"]},
+      "parent_corporation_id": {"type": ["integer", "null"]},
+      "lifetime_giving": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "consecutive_years_given": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "constituent_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "total_committed_matching_gifts": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "total_giving": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "total_pledge_balance": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "total_received_giving": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "total_received_matching_gifts": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "total_soft_credits": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "total_years_given": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "fundraiser_assignment_list": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "amount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "appeal_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "campaign_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "constituent_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "end": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "fund_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fundraiser_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "start": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "type": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "addresses": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "address_lines": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "city": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "constituent_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "country": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "county": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date_added": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_modified": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "do_not_mail": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "end": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "formatted_address": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "inactive": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "postal_code": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "preferred": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "seasonal_end": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "d": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "m": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "y": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "seasonal_start": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "d": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "m": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "y": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "start": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "state": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "suburb": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "phones": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "constituent_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date_added": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_modified": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "do_not_call": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "inactive": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "number": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "primary": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "educations": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "campus": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "class_of": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "class_of_degree": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "constituent_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date_added": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_entered": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "d": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "m": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "y": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "date_graduated": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "d": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "m": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "y": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "date_left": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "d": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "m": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "y": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "date_modified": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "degree": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "department": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "faculty": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "gpa": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "format": "double"
+      },
+      "import_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "known_name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "majors": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "minors": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "notes": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "primary": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "registration_number": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "school": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "social_organization": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "status": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "subject_of_study": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "constituent_custom_fields": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "category": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "comment": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_added": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_modified": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "parent_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": {
+        "enum": [
+          "Text",
+          "Number",
+          "Date",
+          "Currency",
+          "Boolean",
+          "CodeTableEntry",
+          "ConstituentId",
+          "FuzzyDate",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "value": {
+        "anyOf": [
+          {"type": ["string", "null"]},
+          {"type": "number"},
+          {"type": "boolean"},
+          {"type": "object"}
+        ],
+        "properties": {
+          "d": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "m": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "y": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "value_json": {
+        "type": "string",
+        "description": "Canonical JSON encoding of value for lossless mixed-type Parquet round trips."
+      }
+    }
+  },
+  "constituent_custom_field_categories": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": {
+        "enum": [
+          "Text",
+          "Number",
+          "Date",
+          "Currency",
+          "Boolean",
+          "CodeTableEntry",
+          "ConstituentId",
+          "FuzzyDate",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "code_table_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "one_per_record": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      }
+    }
+  },
+  "gifts": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "acknowledgements": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "date": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "letter": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "amount": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "balance": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "batch_number": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "constituent_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_added": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_modified": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "fundraisers": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "amount": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "value": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "format": "double"
+                }
+              }
+            },
+            "constituent_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "gift_aid_amount": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "gift_aid_qualification_status": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "gift_code": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "gift_splits": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "amount": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "value": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "format": "double"
+                }
+              }
+            },
+            "appeal_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "campaign_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fund_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "gift_aid_amount": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "value": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "format": "double"
+                }
+              }
+            },
+            "gift_aid_qualification_status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "package_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "gift_status": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "is_anonymous": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "linked_gifts": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "constituency": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "lookup_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "origin": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "payments": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "account_token": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "bbps_configuration_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "bbps_transaction_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "check_date": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "d": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "format": "int32"
+                },
+                "m": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "format": "int32"
+                },
+                "y": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "format": "int32"
+                }
+              }
+            },
+            "check_number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "checkout_transaction_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "payment_method": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reference": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reference_date": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "d": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "format": "int32"
+                },
+                "m": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "format": "int32"
+                },
+                "y": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post_date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "post_status": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "receipts": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "amount": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "value": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "format": "double"
+                }
+              }
+            },
+            "date": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "number": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int32"
+            },
+            "status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "recurring_gift_schedule": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "end_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "frequency": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "start_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "next_transaction_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "recurring_gift_status_date": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "d": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "m": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "y": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "reference": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "soft_credits": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "amount": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "value": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "format": "double"
+                }
+              }
+            },
+            "constituent_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "gift_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "subtype": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "gift_custom_fields": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "category": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "comment": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_added": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_modified": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "parent_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": {
+        "enum": [
+          "Text",
+          "Number",
+          "Date",
+          "Currency",
+          "Boolean",
+          "CodeTableEntry",
+          "ConstituentId",
+          "FuzzyDate",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "value": {
+        "anyOf": [
+          {"type": ["string", "null"]},
+          {"type": "number"},
+          {"type": "boolean"},
+          {"type": "object"}
+        ],
+        "properties": {
+          "d": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "m": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "y": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "value_json": {
+        "type": "string",
+        "description": "Canonical JSON encoding of value for lossless mixed-type Parquet round trips."
+      }
+    }
+  },
+  "gift_custom_field_categories": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": {
+        "enum": [
+          "Text",
+          "Number",
+          "Date",
+          "Currency",
+          "Boolean",
+          "CodeTableEntry",
+          "ConstituentId",
+          "FuzzyDate",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "code_table_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "one_per_record": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      }
+    }
+  },
+  "funds": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "category": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date_added": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_modified": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "end_date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "goal": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "inactive": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "lookup_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "start_date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "appeals": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "category": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date_added": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_modified": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "end_date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "goal": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "inactive": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "lookup_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "start_date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      }
+    }
+  },
+  "packages": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "appeal_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "category": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date_added": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "date_modified": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "default_gift_amount": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "end": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "goal": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "inactive": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "lookup_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "notes": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "recipient_count": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "format": "int32"
+      },
+      "start": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      }
+    }
+  }
+}

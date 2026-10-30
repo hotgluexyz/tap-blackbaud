@@ -1,17 +1,18 @@
 [tool.poetry]
 name = "tap-blackbaud"
 version = "0.0.4"
-description = "`tap-blackbaud` is a Singer tap for Blackbaud, built with the Meltano SDK for Singer Taps."
+description = "`tap-blackbaud` is a Singer tap for Blackbaud, built with Hotglue's Singer SDK."
 authors = ["hotglue"]
 license = "Apache 2.0"
 
 [tool.poetry.dependencies]
-python = ">=3.6.2,<3.10"
+python = ">=3.10,<3.11"
 requests = "^2.25.1"
-singer-sdk = "0.3.13"
+hotglue-singer-sdk = "1.0.51"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.1.2"
+pytest = "^8.4.2"
+responses = "^0.26.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
